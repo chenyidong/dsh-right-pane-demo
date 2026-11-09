@@ -62,8 +62,13 @@ root owns it. The fix has two parts:
 Dispatch itself always uses the global `main` spec (`host.specOf('main')`),
 so our declaration only relaxes our own check; it does not shadow anything.
 
-Entries without a matching main page fall back to the entry list, which also
-offers "Open in centre" (`layout.selectPanel(id)`) and "Entries" (back).
+Entries without a matching main page fall back to a styled entry list: a
+rounded container with one row per plugin (real icon, localised label, `id`
+badge), 1px separators, hover/active states and an inset selection bar. The
+header offers "Entries" (back) and "Open in centre" (`layout.selectPanel(id)`);
+each row has a quiet "Open in centre" button. A single scoped `<style>` block
+defines the `dsh-right-pane-demo-*` classes, including `:focus-visible` outlines
+for keyboard navigation.
 
 ## Layout
 
@@ -89,10 +94,10 @@ From a DSH session, install straight from GitHub:
 dsh plugin --profile desktop add github:chenyidong/dsh-right-pane-demo
 ```
 
-Or install the packaged `dsh-right-pane-demo-0.1.0.tgz` from the release page:
+Or install the packaged `dsh-right-pane-demo-0.2.0.tgz` from the release page:
 
 ```
-dsh plugin --profile desktop add <path to dsh-right-pane-demo-0.1.0.tgz>
+dsh plugin --profile desktop add <path to dsh-right-pane-demo-0.2.0.tgz>
 ```
 
 For local development, link this directory into the profile's `node_modules`,

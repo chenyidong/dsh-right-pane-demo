@@ -66,28 +66,54 @@ window.__ModuleLoader__.load({
     function makeTitle(t) {
       return function TabTitle() {
         return React.createElement(React.Fragment, null,
-          React.createElement(PanelIcon, { size: 16 }),
-          React.createElement('span', { style: { marginLeft: 6 } }, t('panel.tab')),
+          React.createElement('span', {
+            style: {
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: 20, height: 20, borderRadius: 6,
+              background: 'rgba(128,128,128,0.12)',
+            },
+          }, React.createElement(PanelIcon, { size: 14 })),
+          React.createElement('span', { style: { marginLeft: 8, fontSize: 13 } }, t('panel.tab')),
         )
       }
     }
 
-    const rowStyle = {
-      display: 'flex', alignItems: 'center', gap: 10,
-      padding: '8px 10px', borderRadius: 8,
-      border: '1px solid transparent',
-    }
-    const linkStyle = {
-      padding: '3px 8px', borderRadius: 6, cursor: 'pointer',
-      background: 'transparent', color: 'inherit',
-      fontFamily: 'inherit', fontSize: 12,
-      border: '1px solid currentColor',
-    }
-    const labelButtonStyle = {
-      flex: 1, textAlign: 'left', fontSize: 13, padding: 0,
-      color: 'inherit', fontFamily: 'inherit',
-      background: 'transparent', border: 0, cursor: 'pointer',
-    }
+    // One scoped stylesheet: inline styles cannot express hover/focus states,
+    // and keeping the few rules together avoids per-row state.
+    const css = `
+.${NS}-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;
+  padding:4px 10px;border-radius:7px;cursor:pointer;color:inherit;
+  font-family:inherit;font-size:12px;line-height:1.4;
+  background:rgba(128,128,128,.10);border:1px solid rgba(128,128,128,.26);
+  transition:background .15s,border-color .15s;}
+.${NS}-btn:hover{background:rgba(128,128,128,.20);border-color:rgba(128,128,128,.45);}
+.${NS}-btn:active{background:rgba(128,128,128,.28);}
+.${NS}-btn:focus-visible{outline:2px solid rgba(128,128,128,.55);outline-offset:1px;}
+.${NS}-btn-primary{background:rgba(128,128,128,.20);border-color:rgba(128,128,128,.42);}
+.${NS}-btn-primary:hover{background:rgba(128,128,128,.30);border-color:rgba(128,128,128,.58);}
+.${NS}-btn-quiet{padding:3px 7px;font-size:11px;opacity:.65;
+  background:transparent;border-color:transparent;}
+.${NS}-btn-quiet:hover{opacity:1;background:rgba(128,128,128,.14);
+  border-color:rgba(128,128,128,.26);}
+.${NS}-btn-quiet:focus-visible{opacity:1;}
+.${NS}-glyph{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:8px;background:rgba(128,128,128,.12);}
+.${NS}-row{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-bottom:1px solid rgba(128,128,128,.14);transition:background .15s;}
+.${NS}-row:last-child{border-bottom:0;}
+.${NS}-row:hover{background:rgba(128,128,128,.10);}
+.${NS}-row[data-active="true"]{background:rgba(128,128,128,.16);
+  box-shadow:inset 2px 0 0 rgba(128,128,128,.55);}
+.${NS}-label{flex:1;min-width:0;text-align:left;padding:0;color:inherit;
+  font-family:inherit;font-size:13px;background:transparent;border:0;cursor:pointer;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.${NS}-label:hover{text-decoration:underline;text-underline-offset:3px;}
+.${NS}-label:focus-visible{outline:2px solid rgba(128,128,128,.55);outline-offset:2px;border-radius:3px;}
+.${NS}-id{flex:none;max-width:96px;font-size:11px;opacity:.55;padding:2px 6px;border-radius:5px;
+  background:rgba(128,128,128,.10);font-family:ui-monospace,Menlo,Consolas,monospace;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.${NS}-list{border:1px solid rgba(128,128,128,.18);border-radius:9px;overflow:hidden;}
+`
 
     // Registered into sidebar.right.pane.tab, so the renderer hands the body a
     // renderSlot face. renderSlot('main', ..., {entryKey: id}) mounts the REAL
@@ -105,6 +131,9 @@ window.__ModuleLoader__.load({
           }
         }
         const select = (id) => store.set({ panels, activeId: id })
+        const btn = (text, onClick, extra) => React.createElement('button', {
+          type: 'button', className: NS + '-btn' + (extra ? ' ' + NS + '-btn-' + extra : ''), onClick,
+        }, text)
         const active = panels.find((p) => p.id === activeId)
         let page = null
         if (activeId && renderSlot) {
@@ -121,38 +150,35 @@ window.__ModuleLoader__.load({
             color: 'inherit', fontFamily: 'inherit', lineHeight: 1.6,
           },
         },
+          React.createElement('style', null, css),
           React.createElement('div', {
             style: {
               display: 'flex', alignItems: 'center', gap: 8, flex: 'none',
-              padding: '10px 12px', borderBottom: '1px solid currentColor',
+              padding: '10px 12px', borderBottom: '1px solid rgba(128,128,128,.18)',
             },
           },
-            React.createElement(PanelIcon, { size: 16 }),
-            React.createElement('span', { style: { flex: 1, fontSize: 13, fontWeight: 600 } }, active ? active.label : t('panel.heading')),
-            active ? React.createElement('button', { type: 'button', style: linkStyle, onClick: () => select(null) }, t('panel.backToList')) : null,
-            active ? React.createElement('button', { type: 'button', style: linkStyle, onClick: () => openCenter(activeId) }, t('panel.openCenter')) : null,
+            React.createElement('span', { className: NS + '-glyph' }, React.createElement(PanelIcon, { size: 16 })),
+            React.createElement('span', { style: { flex: 1, minWidth: 0, fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, active ? active.label : t('panel.heading')),
+            active ? btn(t('panel.backToList'), () => select(null), 'quiet') : null,
+            active ? btn(t('panel.openCenter'), () => openCenter(activeId), 'primary') : null,
           ),
           page
             ? React.createElement('div', { style: { flex: 1, minHeight: 0, overflow: 'auto' } }, page)
             : React.createElement('div', {
-                style: { padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 8, overflow: 'auto' },
+                style: { flex: 1, minHeight: 0, padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto' },
               },
                 React.createElement('p', { style: { margin: 0, opacity: 0.85, fontSize: 13 } }, t('panel.body')),
                 panels.length === 0
                   ? React.createElement('p', { style: { margin: 0, opacity: 0.6, fontSize: 12 } }, t('panel.empty'))
-                  : panels.map((p) => React.createElement('div', {
-                      key: p.id,
-                      style: {
-                        ...rowStyle,
-                        borderColor: p.id === activeId ? 'currentColor' : 'transparent',
-                        background: p.id === activeId ? 'rgba(128,128,128,0.12)' : 'transparent',
+                  : React.createElement('div', { className: NS + '-list' }, panels.map((p) =>
+                      React.createElement('div', {
+                        key: p.id, className: NS + '-row', 'data-active': p.id === activeId ? 'true' : 'false',
                       },
-                    },
-                      p.Icon ? React.createElement(SafeIcon, { comp: p.Icon }) : React.createElement(PanelIcon, { size: 18 }),
-                      React.createElement('button', { type: 'button', style: labelButtonStyle, onClick: () => select(p.id) }, p.label),
-                      React.createElement('code', { style: { opacity: 0.5, fontSize: 11 } }, p.id),
-                      React.createElement('button', { type: 'button', style: linkStyle, onClick: () => openCenter(p.id) }, t('panel.openCenter')),
-                    )),
+                        React.createElement('span', { className: NS + '-glyph' }, p.Icon ? React.createElement(SafeIcon, { comp: p.Icon }) : React.createElement(PanelIcon, { size: 18 })),
+                        React.createElement('button', { type: 'button', className: NS + '-label', title: p.label, onClick: () => select(p.id) }, p.label),
+                        React.createElement('code', { className: NS + '-id', title: p.id }, p.id),
+                        btn(t('panel.openCenter'), () => openCenter(p.id), 'quiet'),
+                      ))),
                 React.createElement('p', { style: { margin: 0, opacity: 0.6, fontSize: 12 } }, t('panel.hint')),
               ),
         )
