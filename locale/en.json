@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "title": "Right Pane Demo (dsh-right-pane-demo)",
+    "description": "Intercepts clicks on the top-left global panel rows and renders the real page that plugin registered in the main slot directly in the app's coloured right sidebar."
+  },
+  "panel": {
+    "tab": "Panel Entries",
+    "guide": "Click any plugin entry in the top-left; the real page of that plugin is rendered directly in the coloured right sidebar.",
+    "heading": "Intercepted Plugin Entries",
+    "body": "Clicks on left-sidebar global panel rows are intercepted at the document capture phase; the right pane mounts the real page that the plugin registered in the main slot, while the conversation area stays put.",
+    "empty": "Click any plugin icon in the top-left to try it.",
+    "openCenter": "Open in centre",
+    "backToList": "Entries",
+    "noPage": "No page is available for this entry.",
+    "hint": "The right pane reuses the keyed dispatch of the main slot to show the plugin page itself; entries without a page fall back to the list."
+  }
+}

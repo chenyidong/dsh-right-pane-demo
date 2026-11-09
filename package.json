@@ -1,0 +1,50 @@
+{
+  "name": "dsh-right-pane-demo",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Intercept top-left global panel clicks and render the clicked plugin's real page in the coloured right sidebar.",
+  "keywords": ["dsh-plugin", "dsh", "sidebar", "right-pane", "ui"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chenyidong/dsh-right-pane-demo.git"
+  },
+  "homepage": "https://github.com/chenyidong/dsh-right-pane-demo#readme",
+  "bugs": {
+    "url": "https://github.com/chenyidong/dsh-right-pane-demo/issues"
+  },
+  "author": "chenyidong",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ],
+      "platform": "web"
+    },
+    "displayName": "右栏面板拦截",
+    "description": "点击左上角任意插件入口，把该插件的真实页面显示在右侧有色 sidebar 中。",
+    "icon": "./icon.svg"
+  },
+  "engines": {
+    "dsh": ">=0.2.0-rc.1 <0.3.0-0"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md"
+  ],
+  "license": "MIT"
+}
