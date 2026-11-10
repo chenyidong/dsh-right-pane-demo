@@ -1,17 +1,17 @@
 {
   "meta": {
     "title": "右侧栏演示 (dsh-right-pane-demo)",
-    "description": "拦截左上角全局面板行的点击，把该插件注册在 main 槽里的真实页面直接显示在应用右侧的有色 sidebar 中。"
+    "description": "在设置中选择哪些左上角插件启用拦截；选中的插件在右侧有色 sidebar 与 Better Sidebar 中以自身图标和名称生成按钮，点击直接打开其真实页面。"
   },
   "panel": {
-    "tab": "面板入口",
-    "guide": "点击左上角任意插件入口，该插件的真实页面会直接显示在右侧有色 sidebar 中。",
-    "heading": "被拦截的插件入口",
-    "body": "左栏全局面板行的点击已在 document 捕获阶段拦截；右侧栏直接挂载该插件注册在 main 槽里的真实页面，中间会话区保持原样。",
-    "empty": "点击左上角任意插件图标试试。",
-    "openCenter": "在中心区打开",
-    "backToList": "入口列表",
-    "noPage": "该入口没有可显示的页面。",
-    "hint": "右栏复用 main 槽的 keyed 分发展示插件自身页面；若某个入口没有对应页面，会回退到入口列表。"
+    "noPage": "该插件没有可显示的页面。",
+    "inBetter": "该插件正在 Better Sidebar 中显示。"
+  },
+  "settings": {
+    "nav": "右栏面板拦截",
+    "title": "选择启用拦截的插件",
+    "hint": "勾选的插件会在右侧有色 sidebar 与 Better Sidebar 中各生成一个以插件自身图标和名称命名的按钮，点击直接打开该插件页面；未勾选的插件保持系统默认的中心区打开方式。选择保存在本浏览器（localStorage）。",
+    "empty": "没有检测到左上角面板入口。",
+    "close": "完成"
   }
 }

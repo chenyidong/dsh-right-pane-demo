@@ -1,9 +1,14 @@
 # dsh-right-pane-demo
 
-A minimal DSH UI plugin that opens a tab in the app's coloured right sidebar.
+A minimal DSH UI plugin that opens tabs in the app's coloured right sidebar.
 It **intercepts clicks on the top-left global panel rows** (owned by any other
 plugin) and renders that plugin's real page inside the right sidebar instead of
-letting the shell route it into the centre conversation area.
+letting the shell route it into the centre conversation area. A settings page
+lets you choose **which** plugins are intercepted. Each checked plugin gets its
+own button — named and iconed after the plugin itself — in the coloured right
+sidebar and in [Better Sidebar](https://github.com/omdsh-dev/DSH-better-sidebar);
+clicking that button opens the plugin's real page directly. There is no
+aggregate "Panel Entries" launcher and no second click to pick a plugin.
 
 ## What it does
 
@@ -17,15 +22,26 @@ letting the shell route it into the centre conversation area.
   `PanelRow` button (ui-sidebar:229-232 / ui-renderer:1124-1127). It is
   independent of CSS-module hashes, locale labels and build versions; the
   "More" anchor has no outlet and is intentionally left alone.
-- It reuses the existing right-pane two-phase protocol
-  (`sidebarRightTabs.register` + `sidebar.right.pane.tab` /
-  `sidebar.right.pane.tab.title` keyed slots — the same one `dsh-context`
-  uses). On click it calls `layout.selectPanel(null)` (so the right sidebar is
-  visible again), `layout.openRightbar(true, false)`, then
-  `sidebarRight.openTab(kind)`.
-- The tab body renders the **real page** of the clicked plugin — not a copy.
-  See below.
-- Ships zh/en localized copy plus an original icon; no extra launcher button
+- A **settings page** (`settings.section`) lists every detected top-left panel
+  entry with a checkbox. Unticked plugins keep the shell's native
+  `layout.selectPanel(id)` behaviour; the choice is kept in `localStorage`
+  (origin-scoped, the same persistence `dsh-notify-me` uses) and applied to the
+  capture listener immediately — no remote read at click time.
+- For each **checked** plugin, one tab type is registered in the coloured right
+  sidebar (`sidebarRightTabs.register` + `sidebar.right.pane.tab` /
+  `sidebar.right.pane.tab.title` keyed slots — the same two-phase protocol
+  `dsh-context` uses) using the plugin's own label, real icon and its
+  `sidebar.panellist` id as kind. Clicking the left-sidebar row opens that
+  exact kind: `layout.selectPanel(null)` (so the right sidebar is visible),
+  `layout.openRightbar(true, false)`, then `sidebarRight.openTab(kind)`.
+- The same checked plugins are registered into Better Sidebar as one tab each
+  (soft dependency via `ctx.get('betterSidebar')` +
+  `ctx.on('internal/service', ...)`, the `dsh-mnemon` reconcile pattern). Each
+  descriptor sets `bottomOnly: true` so Better Sidebar does **not** mirror it
+  into DSH's native right pane — that mirroring is what previously produced two
+  "Panel Entries" capsules. Registration is reconciled whenever settings, the
+  panel list, or the services change.
+- Ships zh/en localised copy plus an original icon; no extra launcher button
   is needed — the top-left panel rows are the only entry point.
 
 ### How the real page gets into the right pane
@@ -36,7 +52,7 @@ left-sidebar `sidebar.panellist` entry (plugin-manager:7753/7823,
 schedule:19363/19390). So the body just calls:
 
 ```js
-renderSlot('main', {}, { entryKey: activeId, fallback })
+renderSlot('main', {}, { entryKey: id, fallback })
 ```
 
 Keyed dispatch then finds the plugin's own main entry and `RootEntry` →
@@ -62,13 +78,33 @@ root owns it. The fix has two parts:
 Dispatch itself always uses the global `main` spec (`host.specOf('main')`),
 so our declaration only relaxes our own check; it does not shadow anything.
 
-Entries without a matching main page fall back to a styled entry list: a
-rounded container with one row per plugin (real icon, localised label, `id`
-badge), 1px separators, hover/active states and an inset selection bar. The
-header offers "Entries" (back) and "Open in centre" (`layout.selectPanel(id)`);
-each row has a quiet "Open in centre" button. A single scoped `<style>` block
-defines the `dsh-right-pane-demo-*` classes, including `:focus-visible` outlines
-for keyboard navigation.
+The body is a **single** flex column with `min-height:0` and `overflow:auto`
+(matching the centre's `mainPanel` shape) instead of nested
+`height:100%` + `flex:1` wrappers. That is what restores wheel scrolling:
+the old nesting lost its definite height inside the right pane's
+`tabBody` container. Entries without a matching main page show a short
+"no page" hint rather than a list.
+
+### How the real page reaches Better Sidebar
+
+Better Sidebar mounts its own React root, and its tab `component` receives no
+`renderSlot` face — the slot renderer's `HostContext` lives in the main app
+tree. So the plugin registers a tiny `shell.overlay` entry (a root list slot
+rendered *inside* the main tree, hence with `HostContext` and a
+`renderSlot('main', ...)` face) and uses `ReactDOM.createPortal` to project the
+real page into a DOM seat that the Better Sidebar tab hands over. This is the
+`dsh-mnemon` pattern: "Better Sidebar supplies a DOM seat; the DSH renderer
+remains the owner." `createPortal` keeps the parent tree's context, so the
+portalled `SlotOutlet` still resolves the global `main` spec and the plugin's
+own kit.
+
+Each Better Sidebar tab owns one stable seat node (`flex:1; min-height:0;
+overflow:auto`), appended on mount and removed on unmount. The overlay renders
+a portal only for seats whose tab is currently mounted, so the same `main`
+entry is never mounted twice at once. Both the right-pane bodies and the
+overlay declare `main` through the same shared non-enumerable `children` map
+described above. Profiles without Better Sidebar simply keep the coloured
+right pane.
 
 ## Layout
 
@@ -94,10 +130,10 @@ From a DSH session, install straight from GitHub:
 dsh plugin --profile desktop add github:chenyidong/dsh-right-pane-demo
 ```
 
-Or install the packaged `dsh-right-pane-demo-0.2.0.tgz` from the release page:
+Or install the packaged `dsh-right-pane-demo-0.3.0.tgz` from the release page:
 
 ```
-dsh plugin --profile desktop add <path to dsh-right-pane-demo-0.2.0.tgz>
+dsh plugin --profile desktop add <path to dsh-right-pane-demo-0.3.0.tgz>
 ```
 
 For local development, link this directory into the profile's `node_modules`,
@@ -108,7 +144,10 @@ manifest change up). The client half is watched by `client-hmr`, so editing
 `client.js` hot-reloads in place; reload the Web UI if HMR is unavailable.
 
 Click any plugin icon in the top-left panel column to open the right pane —
-that column is the only entry point; there is no extra launcher button.
+that column is the only entry point; there is no extra launcher button. Open
+**Settings → Right Pane Intercept** to choose which plugins are intercepted;
+checked plugins appear as their own tabs in the coloured right sidebar and in
+Better Sidebar.
 
 ## License
 

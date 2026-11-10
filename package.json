@@ -1,6 +1,6 @@
 {
   "name": "dsh-right-pane-demo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "Intercept top-left global panel clicks and render the clicked plugin's real page in the coloured right sidebar.",
   "keywords": ["dsh-plugin", "dsh", "sidebar", "right-pane", "ui"],
